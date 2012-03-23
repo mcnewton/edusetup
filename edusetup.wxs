@@ -1,0 +1,108 @@
+<?xml version="1.0"?>
+<Wix xmlns='http://schemas.microsoft.com/wix/2006/wi'
+     xmlns:util='http://schemas.microsoft.com/wix/UtilExtension'
+     xmlns:iis='http://schemas.microsoft.com/wix/IIsExtension'>
+
+  <Product Id='E718A250-9E1B-4812-8AB5-0D68E6E427B7' Name='Eduroam Setup' Language='1033'
+           Version='1.0.0.0' Manufacturer='University of Leicester'
+           UpgradeCode='9F3F7826-E0F2-48E9-9DBA-1DB4EDE3F03A'>
+    <Package Description='Eduroam Installer'
+             Comments='Sets up the eduroam wireless network'
+             Manufacturer='University of Leicester' InstallerVersion='200' Compressed='yes' />
+ 
+      <Media Id='1' Cabinet='product.cab' EmbedCab='yes' />
+
+      <Property Id="NETSHFILE">
+        <DirectorySearch Id="CheckNetshDir" Path="[SystemFolder]" Depth="0">
+          <FileSearch Id="CheckNETSHFILE" Name="netsh.exe" />
+        </DirectorySearch>
+      </Property>
+
+      <Condition Message="This installer requires the netsh.exe program, but it cannot be found. As this is a standard component of Windows, your Windows install may be corrupt. Please fix this and then try again.">
+        <![CDATA[NETSHFILE]]>
+      </Condition>
+ 
+      <Directory Id='TARGETDIR' Name='SourceDir'>
+         <Directory Id='ProgramFilesFolder' Name='PFiles'>
+            <Directory Id='EduroamDir' Name='Eduroam'>
+
+               <Component Id='ProfileFiles' Guid='3CD0833F-82F7-4915-B3EB-6A9FE4E9B8EE'>
+                 <File Id='profile' Name='profile.xml' DiskId='1' Source='profile.xml' KeyPath='yes' />
+                 <File Id='readme' Name='readme.txt' DiskId='1' Source='readme.txt' />
+                 <util:InternetShortcut Id='Wireless' Name='Wireless' Target='http://wireless.le.ac.uk/'/>
+               </Component>
+
+               <Component Id="UolCertificate" Guid='C5C258C3-C37D-4521-8AFA-C4B1DB1EF19E'>
+                 <File Id='lerootca.der' Name='Root Certificate.der' DiskId='1' Source='lerootca.der' />
+                 <iis:Certificate Id="lerootca"
+                                  Name="lerootca.der"
+                                  Request="no"
+                                  BinaryKey="Certificate.LeRootCa.Binary"
+                                  StoreLocation="localMachine"
+                                  StoreName="root" />
+               </Component>
+
+            </Directory>
+         </Directory>
+      </Directory>
+
+      <Binary Id="Certificate.LeRootCa.Binary"
+              SourceFile="lerootca.der" />
+
+      <Property Id="EduroamProfileRemove" Value='"netsh.exe" wlan delete profile name="eduroam"' />
+      <CustomAction Id="EduroamProfileRemove" BinaryKey="WixCA" DllEntry="CAQuietExec"
+                    Execute="deferred" Impersonate="no" Return="ignore" />
+
+      <Property Id="UolProfileRemove" Value='"netsh.exe" wlan delete profile name="uol"' />
+      <CustomAction Id="UolProfileRemove" BinaryKey="WixCA" DllEntry="CAQuietExec"
+                    Execute="deferred" Impersonate="no" Return="ignore" />
+
+      <CustomAction Id="EduroamProfileInstall_Cmd"
+                    Property='EduroamProfileInstall'
+                    Value='"[SystemFolder]netsh.exe" wlan add profile filename="[EduroamDir]profile.xml"'
+                    Execute="immediate" />
+      <CustomAction Id="EduroamProfileInstall" BinaryKey="WixCA" DllEntry="CAQuietExec"
+                    Execute="deferred" Impersonate="no" Return="check" />
+
+      <InstallExecuteSequence>
+        <Custom Action="EduroamProfileRemove" Before="InstallFinalize" />
+
+        <!--
+        <Custom Action="EduroamProfileRemove" Before="EduroamProfileInstall"><![CDATA[NOT REMOVE]]></Custom>
+        -->
+
+        <Custom Action="UolProfileRemove" After="EduroamProfileRemove"><![CDATA[NOT REMOVE]]></Custom>
+        <Custom Action="EduroamProfileInstall_Cmd" After="UolProfileRemove"><![CDATA[NOT REMOVE]]></Custom>
+        <Custom Action="EduroamProfileInstall" After="EduroamProfileInstall_Cmd"><![CDATA[NOT REMOVE]]></Custom>
+      </InstallExecuteSequence>
+
+      <Feature Id='Complete' Title='Setup Eduroam' Level='1'>
+         <ComponentRef Id='ProfileFiles' />
+         <ComponentRef Id='UolCertificate' />
+      </Feature>
+   </Product>
+</Wix>
+
+
+
+
+<!--
+      <CustomAction Id="EduroamProfileRemove"
+                    Directory="EduroamDir"
+                    ExeCommand='[SystemFolder]netsh.exe wlan delete profile name="eduroam"'
+                    Execute="deferred" Impersonate="no" Return="ignore" />
+
+      <CustomAction Id="UolProfileRemove"
+                    Directory="EduroamDir"
+                    ExeCommand='[SystemFolder]netsh.exe wlan delete profile name="uol"'
+                    Execute="deferred" Impersonate="no" Return="ignore" />
+
+      <CustomAction Id="EduroamProfileInstall"
+                    Directory="EduroamDir"
+                    ExeCommand='[SystemFolder]netsh.exe wlan add profile filename="profile.xml"'
+                    Execute="deferred" Impersonate="no" Return="check" />
+
+      <Property Id="EduroamProfileInstall" Value='[SystemFolder]netsh.exe wlan add profile filename="profile.xml"' />
+
+-->
+
