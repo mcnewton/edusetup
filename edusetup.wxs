@@ -3,11 +3,11 @@
      xmlns:util='http://schemas.microsoft.com/wix/UtilExtension'
      xmlns:iis='http://schemas.microsoft.com/wix/IIsExtension'>
 
-  <Product Id='E718A250-9E1B-4812-8AB5-0D68E6E427B7' Name='Eduroam Setup' Language='1033'
+  <Product Id='E718A250-9E1B-4812-8AB5-0D68E6E427B7' Name='Eduroam' Language='1033'
            Version='1.0.0.0' Manufacturer='University of Leicester'
            UpgradeCode='9F3F7826-E0F2-48E9-9DBA-1DB4EDE3F03A'>
     <Package Description='Eduroam Installer'
-             Comments='Sets up the eduroam wireless network'
+             Comments='Sets up the eduroam wireless network and installs required certificates'
              Manufacturer='University of Leicester' InstallerVersion='200' Compressed='yes' />
  
       <Media Id='1' Cabinet='product.cab' EmbedCab='yes' />
@@ -29,15 +29,14 @@
                <Component Id='ProfileFiles' Guid='3CD0833F-82F7-4915-B3EB-6A9FE4E9B8EE'>
                  <File Id='profile' Name='profile.xml' DiskId='1' Source='profile.xml' KeyPath='yes' />
                  <File Id='readme' Name='readme.txt' DiskId='1' Source='readme.txt' />
-                 <util:InternetShortcut Id='Wireless' Name='Wireless' Target='http://wireless.le.ac.uk/'/>
                </Component>
 
                <Component Id="UolCertificate" Guid='C5C258C3-C37D-4521-8AFA-C4B1DB1EF19E'>
-                 <File Id='lerootca.der' Name='Root Certificate.der' DiskId='1' Source='lerootca.der' />
-                 <iis:Certificate Id="lerootca"
-                                  Name="lerootca.der"
+                 <File Id='rootca.der' Name='Root Certificate.der' DiskId='1' Source='rootca.der' />
+                 <iis:Certificate Id="rootca"
+                                  Name="rootca.der"
                                   Request="no"
-                                  BinaryKey="Certificate.LeRootCa.Binary"
+                                  BinaryKey="Certificate.RootCa.Binary"
                                   StoreLocation="localMachine"
                                   StoreName="root" />
                </Component>
@@ -46,16 +45,30 @@
          </Directory>
       </Directory>
 
-      <Binary Id="Certificate.LeRootCa.Binary"
-              SourceFile="lerootca.der" />
+      <Binary Id="Certificate.RootCa.Binary"
+              SourceFile="rootca.der" />
 
+<!--
+  By default we remove any existing profile named 'eduroam' so
+  that it does not clash with the new profile we are about to
+  install.
+-->
       <Property Id="EduroamProfileRemove" Value='"netsh.exe" wlan delete profile name="eduroam"' />
       <CustomAction Id="EduroamProfileRemove" BinaryKey="WixCA" DllEntry="CAQuietExec"
                     Execute="deferred" Impersonate="no" Return="ignore" />
 
-      <Property Id="UolProfileRemove" Value='"netsh.exe" wlan delete profile name="uol"' />
-      <CustomAction Id="UolProfileRemove" BinaryKey="WixCA" DllEntry="CAQuietExec"
+<!--
+  If there is an extra wireless profile, such as an old local
+  wireless network, that should be removed, uncomment the following
+  block. You will need to edit the name of the profile to remove.
+  Also uncomment the Custom Action in the InstallExecuteSequence
+  block below.
+-->
+<!--
+      <Property Id="ExtraProfileRemove" Value='"netsh.exe" wlan delete profile name="uol"' />
+      <CustomAction Id="ExtraProfileRemove" BinaryKey="WixCA" DllEntry="CAQuietExec"
                     Execute="deferred" Impersonate="no" Return="ignore" />
+-->
 
       <CustomAction Id="EduroamProfileInstall_Cmd"
                     Property='EduroamProfileInstall'
@@ -64,21 +77,115 @@
       <CustomAction Id="EduroamProfileInstall" BinaryKey="WixCA" DllEntry="CAQuietExec"
                     Execute="deferred" Impersonate="no" Return="check" />
 
+      <Property Id="EduroamProfileConnect" Value='"netsh.exe" wlan connect eduroam' />
+      <CustomAction Id="EduroamProfileConnect" BinaryKey="WixCA" DllEntry="CAQuietExec"
+                    Execute="deferred" Impersonate="no" Return="ignore" />
+
       <InstallExecuteSequence>
         <Custom Action="EduroamProfileRemove" Before="InstallFinalize" />
 
-        <!--
-        <Custom Action="EduroamProfileRemove" Before="EduroamProfileInstall"><![CDATA[NOT REMOVE]]></Custom>
-        -->
+<!-- Uncomment the following line to remove the extra wireless profile, if required -->
+<!--
+        <Custom Action="ExtraProfileRemove" After="EduroamProfileRemove"><![CDATA[NOT REMOVE]]></Custom>
+-->
 
-        <Custom Action="UolProfileRemove" After="EduroamProfileRemove"><![CDATA[NOT REMOVE]]></Custom>
         <Custom Action="EduroamProfileInstall_Cmd" After="UolProfileRemove"><![CDATA[NOT REMOVE]]></Custom>
         <Custom Action="EduroamProfileInstall" After="EduroamProfileInstall_Cmd"><![CDATA[NOT REMOVE]]></Custom>
+        <Custom Action="EduroamProfileConnect" After="EduroamProfileInstall"><![CDATA[NOT REMOVE]]></Custom>
       </InstallExecuteSequence>
 
-      <Feature Id='Complete' Title='Setup Eduroam' Level='1'>
+      <Feature Id='Complete'
+               Title='Setup Eduroam'
+               Level='1'
+               Description='Install certificate and configure eduroam profile.'
+               Display='expand'
+               ConfigurableDirectory='TARGETDIR'>
          <ComponentRef Id='ProfileFiles' />
          <ComponentRef Id='UolCertificate' />
       </Feature>
+
+
+      <UI Id="User_Interface">
+        <Property Id="DefaultUIFont">DlgFont8</Property>
+
+        <TextStyle Id="DlgFont8" FaceName="Tahoma" Size="8" />
+        <TextStyle Id="DlgTitleFont" FaceName="Tahoma" Size="10" Bold="yes" />
+
+        <Dialog Id="WelcomeD" Width="370" Height="270" Title="[ProductName] Setup" NoMinimize="yes">
+          <Control Id="Install" Type="PushButton" X="236" Y="243" Width="56" Height="17" Disabled="yes" Default="yes" Text="Install" >
+            <Condition Action="enable">NOT Installed</Condition>
+            <Publish Event="EndDialog" Value="Return">NOT Installed</Publish>
+          </Control>
+          <Control Id="Exit" Type="PushButton" X="304" Y="243" Width="56" Height="17" Cancel="yes" Text="Exit">
+            <Publish Event="EndDialog" Value="Exit">1</Publish>
+          </Control>
+          <Control Id="Bitmap" Type="Bitmap" X="0" Y="0" Width="370" Height="234" TabSkip="no" Text="BackgroundBitmap" />
+          <Control Id="Back" Type="PushButton" X="180" Y="243" Width="56" Height="17" Disabled="yes" Text="Back" />
+          <Control Id="BottomLine" Type="Line" X="0" Y="234" Width="370" Height="0" />
+          <Control Id="Description" Type="Text" X="135" Y="80" Width="220" Height="60" Transparent="yes" NoPrefix="yes">
+            <Text>This is some text</Text>
+          </Control>
+          <Control Id="Title" Type="Text" X="135" Y="20" Width="220" Height="60" Transparent="yes" NoPrefix="yes">
+            <Text>{\DlgTitleFont}Welcome to eduroam setup</Text>
+          </Control>
+        </Dialog>
+
+        <Dialog Id="ProgressD" Width="370" Height="270" Title="[ProductName] Setup" Modeless="yes">
+          <Control Id="Cancel" Type="PushButton" X="304" Y="243" Width="56" Height="17" Disabled="yes" Default="yes" Cancel="yes" Text="Cancel" />
+          <Control Id="BannerBitmap" Type="Bitmap" X="0" Y="0" Width="370" Height="44" TabSkip="no" Text="BannerBitmap" />
+          <Control Id="Back" Type="PushButton" X="180" Y="243" Width="56" Height="17" Disabled="yes" Text="Back" />
+          <Control Id="Next" Type="PushButton" X="236" Y="243" Width="56" Height="17" Disabled="yes" Text="Next" />
+          <Control Id="BannerLine" Type="Line" X="0" Y="44" Width="370" Height="0" />
+          <Control Id="BottomLine" Type="Line" X="0" Y="234" Width="370" Height="0" />
+          <Control Id="Text" Type="Text" X="20" Y="65" Width="330" Height="35" NoPrefix="yes">
+            <Text>Processing...</Text>
+          </Control>
+          <Control Id="Title" Type="Text" X="20" Y="15" Width="330" Height="15" Transparent="yes" NoPrefix="yes">
+            <Text>{\DlgTitleFont}Title</Text>
+          </Control>
+          <Control Id="ActionText" Type="Text" X="70" Y="100" Width="285" Height="10">
+            <Subscribe Event="ActionText" Attribute="Text" />
+          </Control>
+          <Control Id="ProgressBar" Type="ProgressBar" X="20" Y="115" Width="330" Height="10" ProgressBlocks="yes" Text="Progress...">
+            <Subscribe Event="SetProgress" Attribute="Progress" />
+          </Control>
+          <Control Id="StatusLabel" Type="Text" X="20" Y="100" Width="50" Height="10" Text="!(loc.ProgressDlgStatusLabel)" />
+        </Dialog>
+
+
+        <Dialog Id="ExitD" Width="370" Height="270" Title="[ProductName] Setup">
+          <Control Id="Finish" Type="PushButton" X="236" Y="243" Width="56" Height="17" Default="yes" Cancel="yes" Text="Finish">
+            <Publish Event="EndDialog" Value="Return" />
+          </Control>
+          <Control Id="Cancel" Type="PushButton" X="304" Y="243" Width="56" Height="17" Disabled="yes" Text="Cancel" />
+          <Control Id="Bitmap" Type="Bitmap" X="0" Y="0" Width="370" Height="234" TabSkip="no" Text="BackgroundBitmap" />
+          <Control Id="Back" Type="PushButton" X="180" Y="243" Width="56" Height="17" Disabled="yes" Text="Back" />
+          <Control Id="BottomLine" Type="Line" X="0" Y="234" Width="370" Height="0" />
+          <Control Id="Description" Type="Text" X="135" Y="70" Width="220" Height="40" Transparent="yes" NoPrefix="yes" Text="Description..." />
+          <Control Id="Title" Type="Text" X="135" Y="20" Width="220" Height="60" Transparent="yes" NoPrefix="yes">
+            <Text>{\DlgTitleFont}Eduroam setup complete!</Text>
+          </Control>
+<!--
+          <Control Id="OptionalCheckBox" Type="CheckBox" X="135" Y="190" Width="220" Height="40" Hidden="yes" Property="WIXUI_EXITDIALOGOPTIONALCHECKBOX" CheckBoxValue="1" Text="[WIXUI_EXITDIALOGOPTIONALCHECKBOXTEXT]">
+            <Condition Action="show">WIXUI_EXITDIALOGOPTIONALCHECKBOXTEXT AND NOT Installed</Condition>
+          </Control>
+-->
+        </Dialog>
+
+        <Binary Id="BackgroundBitmap" SourceFile="background.bmp" />
+        <Binary Id="BannerBitmap" SourceFile="banner.bmp" />
+
+
+        <InstallUISequence>
+          <Show Dialog="WelcomeD" After="CostFinalize" />
+          <Show Dialog="ProgressD" Before="ExecuteAction" />
+          <Show Dialog="ExitD" OnExit="success" />
+        </InstallUISequence>
+      </UI>
+
+      <UIRef Id="User_Interface" />
+
+
+
    </Product>
 </Wix>
