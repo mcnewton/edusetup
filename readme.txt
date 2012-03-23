@@ -1,21 +1,24 @@
-University of Leicester - Windows setup for eduroam
+Windows installer to configure eduroam
 
-This installer does the following...
+Matthew Newton
+University of Leicester
 
 
 On installation:
 
-Puts a new wireless profile in the Program Files\Eduroam directory.
-Removes any wireless profile named 'eduroam' using netsh.
-Removes any wireless named 'uol' using netsh.
-Installs the new 'eduroam' wireless profile using netsh.
+ * Puts a new wireless profile in the Program Files\Edusetup
+   directory.
+ * Removes any wireless profile named 'eduroam'.
+ * Optionally removes another wireless profile.
 
-Installs the University of Leicester root certificate in the
-computer root certificate store.
+ * Installs the new 'eduroam' wireless profile.
+
+ * Installs the root certificate in the computer root certificate
+   store.
 
 
 On removal:
 
-Removes the University of Leicester root certificate.
-Removes the wireless profile named 'eduroam' using netsh.
+ * Removes the root certificate.
+ * Removes the wireless profile named 'eduroam'.
 
