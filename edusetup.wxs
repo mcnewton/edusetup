@@ -82,27 +82,3 @@
       </Feature>
    </Product>
 </Wix>
-
-
-
-
-<!--
-      <CustomAction Id="EduroamProfileRemove"
-                    Directory="EduroamDir"
-                    ExeCommand='[SystemFolder]netsh.exe wlan delete profile name="eduroam"'
-                    Execute="deferred" Impersonate="no" Return="ignore" />
-
-      <CustomAction Id="UolProfileRemove"
-                    Directory="EduroamDir"
-                    ExeCommand='[SystemFolder]netsh.exe wlan delete profile name="uol"'
-                    Execute="deferred" Impersonate="no" Return="ignore" />
-
-      <CustomAction Id="EduroamProfileInstall"
-                    Directory="EduroamDir"
-                    ExeCommand='[SystemFolder]netsh.exe wlan add profile filename="profile.xml"'
-                    Execute="deferred" Impersonate="no" Return="check" />
-
-      <Property Id="EduroamProfileInstall" Value='[SystemFolder]netsh.exe wlan add profile filename="profile.xml"' />
-
--->
-
