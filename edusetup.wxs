@@ -110,7 +110,7 @@
         <Custom Action="ExtraProfileRemove" After="EduroamProfileRemove"><![CDATA[NOT REMOVE]]></Custom>
 -->
 
-        <Custom Action="EduroamProfileInstall_Cmd" After="UolProfileRemove"><![CDATA[NOT REMOVE]]></Custom>
+        <Custom Action="EduroamProfileInstall_Cmd" After="EduroamProfileRemove"><![CDATA[NOT REMOVE]]></Custom>
         <Custom Action="EduroamProfileInstall" After="EduroamProfileInstall_Cmd"><![CDATA[NOT REMOVE]]></Custom>
         <Custom Action="EduroamProfileConnect" After="EduroamProfileInstall"><![CDATA[NOT REMOVE]]></Custom>
       </InstallExecuteSequence>
@@ -146,9 +146,13 @@
         <TextStyle Id="DlgTitleFont" FaceName="Tahoma" Size="10" Bold="yes" />
 
         <Dialog Id="WelcomeD" Width="370" Height="270" Title="[ProductName] Setup" NoMinimize="yes">
-          <Control Id="Install" Type="PushButton" X="236" Y="243" Width="56" Height="17" Disabled="yes" Default="yes" Text="Install" >
-            <Condition Action="enable">NOT Installed</Condition>
+          <Control Id="Install" Type="PushButton" X="236" Y="243" Width="56" Height="17" Hidden="yes" Default="yes" Text="Install" >
+            <Condition Action="show">NOT Installed</Condition>
             <Publish Event="EndDialog" Value="Return">NOT Installed</Publish>
+          </Control>
+          <Control Id="Repair" Type="PushButton" X="236" Y="243" Width="56" Height="17" Hidden="yes" Default="yes" Text="Repair" >
+            <Condition Action="show">Installed</Condition>
+            <Publish Event="EndDialog" Value="Return">Installed</Publish>
           </Control>
           <Control Id="Exit" Type="PushButton" X="304" Y="243" Width="56" Height="17" Cancel="yes" Text="Exit">
             <Publish Event="EndDialog" Value="Exit">1</Publish>
@@ -156,16 +160,23 @@
           <Control Id="Bitmap" Type="Bitmap" X="0" Y="0" Width="370" Height="234" TabSkip="no" Text="BackgroundBitmap" />
           <Control Id="Back" Type="PushButton" X="180" Y="243" Width="56" Height="17" Disabled="yes" Text="Back" />
           <Control Id="BottomLine" Type="Line" X="0" Y="234" Width="370" Height="0" />
-          <Control Id="Description" Type="Text" X="135" Y="80" Width="220" Height="60" Transparent="yes" NoPrefix="yes">
-            <Text>
-              This installer will configure the eduroam wireless
-              network on your computer.
+          <Control Id="DescriptionI" Type="Text" X="135" Y="50" Width="220" Height="100" Hidden="yes" Transparent="yes" NoPrefix="yes">
+            <Text>This installer will configure the eduroam wireless network on your computer.
 
-              To use eduroam you must comply with the university
-              and JANET acceptable use regulations. If you visit
-              other sites where you connect to eduroam, you must
-              comply with their acceptable use regulations, too.
-            </Text>
+To use eduroam you must comply with the university and JANET acceptable use regulations. If you visit other sites where you connect to eduroam, you must comply with their acceptable use regulations, too.
+
+Click the Install button below to setup eduroam on your computer.
+</Text>
+            <Condition Action="show">NOT Installed</Condition>
+          </Control>
+          <Control Id="DescriptionR" Type="Text" X="135" Y="50" Width="220" Height="100" Hidden="yes" Transparent="yes" NoPrefix="yes">
+            <Text>Eduroam has already been set up on your computer.
+
+If it is not working correctly, you can attempt to re-install the wireless settings by clicking on 'Repair' below.
+
+To remove the eduroam settings, please use "Programs and Features" in Control Panel to remove the Edusetup package.
+</Text>
+            <Condition Action="show">Installed</Condition>
           </Control>
           <Control Id="Title" Type="Text" X="135" Y="20" Width="220" Height="60" Transparent="yes" NoPrefix="yes">
             <Text>{\DlgTitleFont}Welcome to eduroam setup</Text>
@@ -180,10 +191,10 @@
           <Control Id="BannerLine" Type="Line" X="0" Y="44" Width="370" Height="0" />
           <Control Id="BottomLine" Type="Line" X="0" Y="234" Width="370" Height="0" />
           <Control Id="Text" Type="Text" X="20" Y="65" Width="330" Height="35" NoPrefix="yes">
-            <Text>Please wait while eduroam is configured on your computer...</Text>
+            <Text>Please wait while eduroam is configured on your computer.</Text>
           </Control>
           <Control Id="Title" Type="Text" X="20" Y="15" Width="330" Height="15" Transparent="yes" NoPrefix="yes">
-            <Text>{\DlgTitleFont}Title</Text>
+            <Text>{\DlgTitleFont}Setting up eduroam</Text>
           </Control>
           <Control Id="ActionText" Type="Text" X="70" Y="100" Width="285" Height="10">
             <Subscribe Event="ActionText" Attribute="Text" />
@@ -203,11 +214,10 @@
           <Control Id="Bitmap" Type="Bitmap" X="0" Y="0" Width="370" Height="234" TabSkip="no" Text="BackgroundBitmap" />
           <Control Id="Back" Type="PushButton" X="180" Y="243" Width="56" Height="17" Disabled="yes" Text="Back" />
           <Control Id="BottomLine" Type="Line" X="0" Y="234" Width="370" Height="0" />
-          <Control Id="Description" Type="Text" X="135" Y="70" Width="220" Height="40" Transparent="yes" NoPrefix="yes">
-            <Text>
-              When logging in, you must remember to add @le.ac.uk
-              after your username. For example, abc1@le.ac.uk.
-              Use your normal university password.
+          <Control Id="Description" Type="Text" X="135" Y="50" Width="220" Height="100" Transparent="yes" NoPrefix="yes">
+            <Text>When logging in, you must remember to add @le.ac.uk after your username. For example, abc1@le.ac.uk.  Use your normal university password.
+
+If you are having problems connecting to eduroam, please contact IT Services for assistance. Note that help for personally owned computers is limited to a best efforts basis only.
             </Text>
           </Control>
           <Control Id="Title" Type="Text" X="135" Y="20" Width="220" Height="60" Transparent="yes" NoPrefix="yes">
