@@ -44,7 +44,7 @@
   Comment out this Componet section if no certificate should be
   installed.
 -->
-               <Component Id="UolCertificate" Guid='C5C258C3-C37D-4521-8AFA-C4B1DB1EF19E'>
+               <Component Id="RootCertificate" Guid='C5C258C3-C37D-4521-8AFA-C4B1DB1EF19E'>
                  <File Id='rootca.der' Name='Root Certificate.der' DiskId='1' Source='rootca.der' />
                  <iis:Certificate Id="rootca"
                                   Name="rootca.der"
@@ -131,7 +131,7 @@
   Comment out the next line if no certificate should be
   installed.
 -->
-         <ComponentRef Id='UolCertificate' />
+         <ComponentRef Id='RootCertificate' />
       </Feature>
 
 
