@@ -230,6 +230,26 @@ If you are having problems connecting to eduroam, please contact IT Services for
 -->
         </Dialog>
 
+
+        <Dialog Id="ErrorD" Width="370" Height="270" Title="Installation Error">
+          <Control Id="Finish" Type="PushButton" X="236" Y="243" Width="56" Height="17" Default="yes" Cancel="yes" Text="Finish">
+            <Publish Event="EndDialog" Value="Exit">1</Publish>
+          </Control>
+          <Control Id="Cancel" Type="PushButton" X="304" Y="243" Width="56" Height="17" Disabled="yes" Text="Cancel" />
+          <Control Id="Bitmap" Type="Bitmap" X="0" Y="0" Width="370" Height="234" TabSkip="no" Text="BackgroundBitmap" />
+          <Control Id="Back" Type="PushButton" X="180" Y="243" Width="56" Height="17" Disabled="yes" Text="Back" />
+          <Control Id="BottomLine" Type="Line" X="0" Y="234" Width="370" Height="0" />
+	  <Control Id="Description" Type="Text" X="135" Y="50" Width="220" Height="100" Transparent="yes" NoPrefix="yes">
+            <Text>!(loc.FatalErrorDescription1) !(loc.FatalErrorDescription2)
+
+Please reboot and try again. If you continue to have problems, please contact IT Services for assistance.
+            </Text>
+          </Control>
+          <Control Id="Title" Type="Text" X="135" Y="20" Width="220" Height="60" Transparent="yes" NoPrefix="yes">
+            <Text>{\DlgTitleFont}Sorry, something has gone wrong!</Text>
+          </Control>
+        </Dialog>
+
         <Binary Id="BackgroundBitmap" SourceFile="background.bmp" />
         <Binary Id="BannerBitmap" SourceFile="banner.bmp" />
 
@@ -238,6 +258,7 @@ If you are having problems connecting to eduroam, please contact IT Services for
           <Show Dialog="WelcomeD" After="CostFinalize" />
           <Show Dialog="ProgressD" Before="ExecuteAction" />
           <Show Dialog="ExitD" OnExit="success" />
+          <Show Dialog="ErrorD" OnExit="error" />
         </InstallUISequence>
       </UI>
 
