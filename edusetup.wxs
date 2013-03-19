@@ -215,9 +215,9 @@ To remove the eduroam settings, please use "Programs and Features" in Control Pa
           <Control Id="Back" Type="PushButton" X="180" Y="243" Width="56" Height="17" Disabled="yes" Text="Back" />
           <Control Id="BottomLine" Type="Line" X="0" Y="234" Width="370" Height="0" />
           <Control Id="Description" Type="Text" X="135" Y="50" Width="220" Height="100" Transparent="yes" NoPrefix="yes">
-            <Text>When logging in, you must remember to add @le.ac.uk after your username. For example, abc1@le.ac.uk.  Use your normal university password.
+            <Text>When logging in, you must remember to add your realm after your username. For example, user@example.ac.uk.  Use your normal university password.
 
-If you are having problems connecting to eduroam, please contact IT Services for assistance. Note that help for personally owned computers is limited to a best efforts basis only.
+If you are having problems connecting to eduroam, please contact the IT help desk for assistance. Note that help for personally owned devices is limited to a best efforts basis only.
             </Text>
           </Control>
           <Control Id="Title" Type="Text" X="135" Y="20" Width="220" Height="60" Transparent="yes" NoPrefix="yes">
