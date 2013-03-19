@@ -1,0 +1,12 @@
+# build outputs
+
+*.msi
+*.wixobj
+*.wixpdb
+
+
+# backup files
+
+*~
+*.bak
+
